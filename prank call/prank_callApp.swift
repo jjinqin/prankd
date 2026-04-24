@@ -2,7 +2,7 @@
 //  prank_callApp.swift
 //  prank call
 //
-//  Created by Aileen Jane on 20/04/26.
+//  Created by Aileen Jane on 22/04/26.
 //
 
 import SwiftUI
@@ -11,7 +11,8 @@ import SwiftUI
 struct prank_callApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Screen1Player() 
         }
     }
 }
+
