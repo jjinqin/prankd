@@ -1,0 +1,253 @@
+//
+//  screen 1 victim.swift
+//  prank call
+//
+//  Created by Aileen Jane on 21/04/26.
+//
+
+import SwiftUI
+
+
+struct Screen1Victim: View {
+    @Binding var victims : [ContactModel]
+    @Binding var players: [ContactModel]
+    func deletePlayerById(_ id: UUID) {
+        victims.removeAll { $0.id == id }
+    }
+    var body: some View {
+        ZStack {
+            
+            NavigationStack {
+                
+                
+                // PLAYER LIST
+                List {
+                    ForEach ($victims) { $x in
+                        NavigationLink {
+                            DetailVictim(contactModel: $x,
+                                         onDelete: {
+                                             deletePlayerById(x.id)
+                                         }
+                            )
+                        } label: {
+                            HStack{
+                                Image(x.imageName ?? "women 1")
+                                    .resizable()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                                VStack(alignment: .leading) {
+                                    Text(x.firstName).font(.title2)
+                                    Text(x.phoneNumber ?? "08999999999")
+                                }
+                            }
+                        }
+                    }
+                }
+                .scrollContentBackground(.hidden)
+                .background(Color.black)
+                .navigationTitle("Victims 💀")
+                
+                // ADD NEW VICTIM
+                .safeAreaInset(edge: .bottom) {
+                    NavigationLink {
+                        FormVictim(contactList: $victims)
+                    } label: {
+                        Text ("Add New Victim")
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.glass)
+                    .padding()
+                }
+                
+                // NEXT SCREEN (CHOOSE PLAYER)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationLink(destination: Screen2(
+                            players: $players,
+                            victims: $victims
+                        )){
+                            Label("", systemImage: "chevron.right")
+                        }
+                    }
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+}
+
+// CHANGE DETAILS
+struct DetailVictim: View {
+    @Binding var contactModel: ContactModel
+    @State var selectedImage = ""
+    @State var isOn = false
+    @State var temporaryTextFieldData = ""
+    @State var temporaryNumberFieldData = ""
+    @Environment(\.dismiss) private var dismiss
+    let onDelete: () -> Void
+
+    
+    var body: some View {
+        Image(selectedImage)
+            .resizable()
+            .frame(width: 120, height: 120)
+            .clipShape(Circle())
+
+        Text(contactModel.firstName).font(.largeTitle.bold())
+        Text(contactModel.phoneNumber ?? "08999999999").font(.title2)
+        VStack {
+            Text("Select Icon")
+                .font(.headline.bold())
+                .foregroundStyle(.gray)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 30)
+            ScrollView(.horizontal) {
+                HStack {
+                    ForEach(profileImages, id: \.self) { img in
+                        Image(img)
+                            .resizable()
+                            .frame(width: 60, height: 60)
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .stroke(selectedImage == img ? Color.white : Color.clear, lineWidth: 3)
+                            )
+                            .opacity(selectedImage == img ? 1 : 0.6)
+                            .onTapGesture {
+                                selectedImage = img
+                            }
+                    }
+                }
+                .frame(height: 63)
+                .padding(.horizontal)
+            }
+        }
+        .onAppear {
+            selectedImage = contactModel.imageName ?? "women 1"
+                temporaryTextFieldData = contactModel.firstName
+                temporaryNumberFieldData = contactModel.phoneNumber ?? "08999999999"
+            }
+        Form {
+            Section (header: Text("Change Name")){
+                TextField("Change Name", text: $temporaryTextFieldData)
+                    .onAppear {
+                        temporaryTextFieldData = contactModel.firstName
+                    }
+            }
+            Section (header: Text("Change Number")){
+                TextField("Change Number", text: $temporaryNumberFieldData)
+                    .onAppear {
+                        temporaryNumberFieldData = contactModel.phoneNumber ?? "08999999999"
+                    }
+            }
+        }
+        HStack {
+            // CANCEL
+            Button {
+                dismiss()
+            } label: {
+                Text ("Cancel")
+                Image(systemName: "xmark")
+            }
+            .buttonStyle(.glass)
+            .tint(.blue)
+            
+            // DELETE
+            Button {
+                onDelete()
+                dismiss()
+            } label: {
+                Text ("Delete")
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.glass)
+            .tint(.red)
+            
+            // SAVE
+            Button {
+                contactModel.firstName = temporaryTextFieldData
+                contactModel.phoneNumber = temporaryNumberFieldData
+                contactModel.imageName = selectedImage
+                dismiss()
+            } label: {
+                Text ("Save")
+                Image(systemName: "checkmark")
+            }
+            .foregroundStyle(.black)
+            .buttonStyle(.glassProminent)
+            .tint(.green)
+        }
+    }
+}
+
+// ADD NEW VICTIM
+struct FormVictim: View {
+    @Binding var contactList: [ContactModel]
+    @State var selectedImage = profileImages.randomElement()!
+    @State var temporaryFirstName = ""
+    @State var temporaryPhoneNumber = ""
+    @State var temporaryImageName = ""
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        VStack (spacing: 20) {
+            Image(selectedImage)
+                .resizable()
+                .frame(width: 120, height: 120)
+                .clipShape(Circle())
+            Text("New Victim")
+                .font(.largeTitle.bold())
+            VStack {
+                Text("Select Icon")
+                    .font(.headline.bold())
+                    .foregroundStyle(.gray)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 30)
+                ScrollView(.horizontal) {
+                    HStack {
+                        ForEach(profileImages, id: \.self) { img in
+                            Image(img)
+                                .resizable()
+                                .frame(width: 60, height: 60)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(selectedImage == img ? Color.white : Color.clear, lineWidth: 3)
+                                )
+                                .opacity(selectedImage == img ? 1 : 0.6)
+                                .onTapGesture {
+                                    selectedImage = img
+                                }
+                        }
+                    }
+                    .frame(height: 63)
+                    .padding(.horizontal)
+                }
+            }
+            Form {
+                Section (header: Text("add name")) {
+                    TextField("Name", text: $temporaryFirstName)
+                }
+                Section (header: Text("add phone number")) {
+                    TextField("Phone Number", text: $temporaryPhoneNumber)
+                }
+                
+            }
+            Button {
+                contactList.append(
+                    ContactModel(firstName: temporaryFirstName,
+                                 phoneNumber: temporaryPhoneNumber,
+                                 imageName: selectedImage,
+                                 role: .victim))
+                dismiss()
+            } label: {
+                Text ("Save")
+                Image(systemName: "checkmark")
+            }
+            .foregroundStyle(.black)
+            .buttonStyle(.glassProminent)
+            .tint(.green)
+        }
+    }
+}
