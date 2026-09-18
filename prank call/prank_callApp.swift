@@ -11,7 +11,7 @@ import SwiftUI
 struct prank_callApp: App {
     var body: some Scene {
         WindowGroup {
-            Screen1Player() 
+            SplashView()
         }
     }
 }

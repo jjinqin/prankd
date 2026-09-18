@@ -11,16 +11,18 @@ import SwiftUI
 struct Screen1Victim: View {
     @Binding var victims : [ContactModel]
     @Binding var players: [ContactModel]
+    @State var callResults: [CallResult] = []
     func deletePlayerById(_ id: UUID) {
         victims.removeAll { $0.id == id }
     }
     var body: some View {
-        ZStack {
-            
-            NavigationStack {
-                
-                
-                // PLAYER LIST
+        NavigationStack {
+            VStack(spacing: 6) {
+                Text("Victims 💀")
+                    .font(.pixel(28).bold())
+                    .foregroundColor(prankdGreenDark)
+                    .padding(.top, 16)
+
                 List {
                     ForEach ($victims) { $x in
                         NavigationLink {
@@ -31,49 +33,48 @@ struct Screen1Victim: View {
                             )
                         } label: {
                             HStack{
-                                Image(x.imageName)
+                                Image(x.imageName ?? "women 1")
                                     .resizable()
                                     .frame(width: 40, height: 40)
                                     .clipShape(Circle())
                                 VStack(alignment: .leading) {
-                                    Text(x.firstName).font(.title2)
-                                    Text(x.phoneNumber)
+                                    Text(x.firstName)
+                                        .font(.pixel(18))
+                                    Text(x.phoneNumber ?? "08999999999")
+                                        .font(.pixel(13))
+                                        .opacity(0.7)
                                 }
+                                .foregroundColor(prankdGreenDark)
                             }
                         }
+                        .listRowBackground(Color.clear)
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .background(Color.black)
-                .navigationTitle("Victims 💀")
-                
-                // ADD NEW VICTIM
-                .safeAreaInset(edge: .bottom) {
-                    NavigationLink {
-                        FormVictim(contactList: $victims)
-                    } label: {
-                        Text ("Add New Victim")
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.glass)
-                    .padding()
+            }
+            .background(StripedBackground())
+            .safeAreaInset(edge: .bottom) {
+                NavigationLink {
+                    FormVictim(contactList: $victims)
+                } label: {
+                    Text("Add New Victim")
                 }
-                
-                // NEXT SCREEN (CHOOSE PLAYER)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        NavigationLink(destination: Screen2(
-                            players: $players,
-                            victims: $victims
-                        )){
-                            Label("", systemImage: "chevron.right")
-                        }
+                .buttonStyle(PixelButtonStyle())
+                .padding()
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink(destination: Screen2(
+                        players: $players,
+                        victims: $victims,
+                        callResults: $callResults
+                    )){
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(prankdGreenDark)
                     }
                 }
             }
         }
-        .preferredColorScheme(.dark)
     }
 }
 
@@ -87,95 +88,117 @@ struct DetailVictim: View {
     @Environment(\.dismiss) private var dismiss
     let onDelete: () -> Void
 
-    
     var body: some View {
-        Image(selectedImage)
-            .resizable()
-            .frame(width: 120, height: 120)
-            .clipShape(Circle())
+        ScrollView {
+            VStack(spacing: 20) {
+                Image(selectedImage)
+                    .resizable()
+                    .frame(width: 120, height: 120)
+                    .clipShape(Circle())
 
-        Text(contactModel.firstName).font(.largeTitle.bold())
-        Text(contactModel.phoneNumber).font(.title2)
-        VStack {
-            Text("Select Icon")
-                .font(.headline.bold())
-                .foregroundStyle(.gray)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 30)
-            ScrollView(.horizontal) {
-                HStack {
-                    ForEach(profileImages, id: \.self) { img in
-                        Image(img)
-                            .resizable()
-                            .frame(width: 60, height: 60)
-                            .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .stroke(selectedImage == img ? Color.white : Color.clear, lineWidth: 3)
-                            )
-                            .opacity(selectedImage == img ? 1 : 0.6)
-                            .onTapGesture {
-                                selectedImage = img
+                Text(contactModel.firstName)
+                    .font(.pixel(26).bold())
+                Text(contactModel.phoneNumber ?? "08999999999")
+                    .font(.pixel(16))
+                    .opacity(0.7)
+
+                VStack {
+                    Text("Select Icon")
+                        .font(.pixel(14))
+                        .foregroundStyle(prankdGreenDark.opacity(0.6))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 30)
+                    ScrollView(.horizontal) {
+                        HStack {
+                            ForEach(profileImages, id: \.self) { img in
+                                Image(img)
+                                    .resizable()
+                                    .frame(width: 60, height: 60)
+                                    .clipShape(Circle())
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedImage == img ? prankdGreenDark : Color.clear, lineWidth: 3)
+                                    )
+                                    .opacity(selectedImage == img ? 1 : 0.6)
+                                    .onTapGesture {
+                                        selectedImage = img
+                                    }
                             }
+                        }
+                        .frame(height: 63)
+                        .padding(.horizontal)
                     }
                 }
-                .frame(height: 63)
-                .padding(.horizontal)
-            }
-        }
-        .onAppear {
-                selectedImage = contactModel.imageName
-                temporaryTextFieldData = contactModel.firstName
-                temporaryNumberFieldData = contactModel.phoneNumber
-            }
-        Form {
-            Section (header: Text("Change Name")){
-                TextField("Change Name", text: $temporaryTextFieldData)
-                    .onAppear {
-                        temporaryTextFieldData = contactModel.firstName
+                .onAppear {
+                    selectedImage = contactModel.imageName ?? "women 1"
+                    temporaryTextFieldData = contactModel.firstName
+                    temporaryNumberFieldData = contactModel.phoneNumber ?? "08999999999"
+                }
+
+                VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("change name")
+                            .font(.pixel(13))
+                            .foregroundColor(prankdGreenDark.opacity(0.6))
+                        TextField("Change Name", text: $temporaryTextFieldData)
+                            .font(.pixel(17))
+                            .textFieldStyle(.plain)
                     }
-            }
-            Section (header: Text("Change Number")){
-                TextField("Change Number", text: $temporaryNumberFieldData)
-                    .onAppear {
-                        temporaryNumberFieldData = contactModel.phoneNumber
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("change number")
+                            .font(.pixel(13))
+                            .foregroundColor(prankdGreenDark.opacity(0.6))
+                        TextField("Change Number", text: $temporaryNumberFieldData)
+                            .font(.pixel(17))
+                            .textFieldStyle(.plain)
                     }
+                }
+                .foregroundColor(prankdGreenDark)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .pixelCard()
+
+                HStack {
+                    // CANCEL
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text("Cancel")
+                    }
+                    .buttonStyle(PixelButtonStyle(fill: PrankdTheme.buttonLightFill, textColor: PrankdTheme.darkest))
+
+                    // DELETE
+                    Button {
+                        onDelete()
+                        dismiss()
+                    } label: {
+                        Text("Delete")
+                    }
+                    .buttonStyle(PixelButtonStyle(fill: PrankdTheme.dark, textColor: PrankdTheme.pale))
+
+                    // SAVE
+                    Button {
+                        contactModel.firstName = temporaryTextFieldData
+                        contactModel.phoneNumber = temporaryNumberFieldData
+                        contactModel.imageName = selectedImage
+                        dismiss()
+                    } label: {
+                        Text("Save")
+                    }
+                    .buttonStyle(PixelButtonStyle())
+                }
             }
+            .foregroundColor(prankdGreenDark)
+            .padding(20)
         }
-        HStack {
-            // CANCEL
-            Button {
-                dismiss()
-            } label: {
-                Text ("Cancel")
-                Image(systemName: "xmark")
+        .background(StripedBackground())
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(prankdGreenDark)
+                }
             }
-            .buttonStyle(.glass)
-            .tint(.blue)
-            
-            // DELETE
-            Button {
-                onDelete()
-                dismiss()
-            } label: {
-                Text ("Delete")
-                Image(systemName: "trash")
-            }
-            .buttonStyle(.glass)
-            .tint(.red)
-            
-            // SAVE
-            Button {
-                contactModel.firstName = temporaryTextFieldData
-                contactModel.imageName = selectedImage
-                dismiss()
-            } label: {
-                Text ("Save")
-                Image(systemName: "checkmark")
-            }
-            .foregroundStyle(.black)
-            .buttonStyle(.glassProminent)
-            .tint(.green)
         }
     }
 }
@@ -188,64 +211,91 @@ struct FormVictim: View {
     @State var temporaryPhoneNumber = ""
     @State var temporaryImageName = ""
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
-        VStack (spacing: 20) {
-            Image(selectedImage)
-                .resizable()
-                .frame(width: 120, height: 120)
-                .clipShape(Circle())
-            Text("New Victim")
-                .font(.largeTitle.bold())
-            VStack {
-                Text("Select Icon")
-                    .font(.headline.bold())
-                    .foregroundStyle(.gray)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 30)
-                ScrollView(.horizontal) {
-                    HStack {
-                        ForEach(profileImages, id: \.self) { img in
-                            Image(img)
-                                .resizable()
-                                .frame(width: 60, height: 60)
-                                .clipShape(Circle())
-                                .overlay(
-                                    Circle()
-                                        .stroke(selectedImage == img ? Color.white : Color.clear, lineWidth: 3)
-                                )
-                                .opacity(selectedImage == img ? 1 : 0.6)
-                                .onTapGesture {
-                                    selectedImage = img
-                                }
+        ScrollView {
+            VStack (spacing: 20) {
+                Image(selectedImage)
+                    .resizable()
+                    .frame(width: 120, height: 120)
+                    .clipShape(Circle())
+                Text("New Victim")
+                    .font(.pixel(26).bold())
+                    .foregroundColor(prankdGreenDark)
+
+                VStack {
+                    Text("Select Icon")
+                        .font(.pixel(14))
+                        .foregroundStyle(prankdGreenDark.opacity(0.6))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 30)
+                    ScrollView(.horizontal) {
+                        HStack {
+                            ForEach(profileImages, id: \.self) { img in
+                                Image(img)
+                                    .resizable()
+                                    .frame(width: 60, height: 60)
+                                    .clipShape(Circle())
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedImage == img ? prankdGreenDark : Color.clear, lineWidth: 3)
+                                    )
+                                    .opacity(selectedImage == img ? 1 : 0.6)
+                                    .onTapGesture {
+                                        selectedImage = img
+                                    }
+                            }
                         }
+                        .frame(height: 63)
+                        .padding(.horizontal)
                     }
-                    .frame(height: 63)
-                    .padding(.horizontal)
+                }
+
+                VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("add name")
+                            .font(.pixel(13))
+                            .foregroundColor(prankdGreenDark.opacity(0.6))
+                        TextField("Name", text: $temporaryFirstName)
+                            .font(.pixel(17))
+                            .textFieldStyle(.plain)
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("add phone number")
+                            .font(.pixel(13))
+                            .foregroundColor(prankdGreenDark.opacity(0.6))
+                        TextField("Phone Number", text: $temporaryPhoneNumber)
+                            .font(.pixel(17))
+                            .textFieldStyle(.plain)
+                    }
+                }
+                .foregroundColor(prankdGreenDark)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .pixelCard()
+
+                Button {
+                    contactList.append(
+                        ContactModel(firstName: temporaryFirstName,
+                                     phoneNumber: temporaryPhoneNumber,
+                                     imageName: selectedImage,
+                                     role: .victim))
+                    dismiss()
+                } label: {
+                    Text("Save")
+                }
+                .buttonStyle(PixelButtonStyle())
+            }
+            .padding(20)
+        }
+        .background(StripedBackground())
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(prankdGreenDark)
                 }
             }
-            Form {
-                Section (header: Text("add name")) {
-                    TextField("Name", text: $temporaryFirstName)
-                }
-                Section (header: Text("add phone number")) {
-                    TextField("Phone Number", text: $temporaryPhoneNumber)
-                }
-                
-            }
-            Button {
-                contactList.append(
-                    ContactModel(firstName: temporaryFirstName,
-                                 phoneNumber: temporaryPhoneNumber,
-                                 imageName: selectedImage))
-                dismiss()
-            } label: {
-                Text ("Save")
-                Image(systemName: "checkmark")
-            }
-            .foregroundStyle(.black)
-            .buttonStyle(.glassProminent)
-            .tint(.green)
         }
     }
 }

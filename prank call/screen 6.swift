@@ -58,7 +58,7 @@ struct PodiumItem: View {
     
     var body: some View {
         VStack (spacing: 10) {
-            Image(player.contact.imageName)
+            Image(player.contact.imageName ?? "women 1")
                 .resizable()
                 .frame (width: rank == 1 ? 120:90,
                         height: rank == 1 ? 120:90)
@@ -139,11 +139,34 @@ struct BottomLeaderboardList: View {
                         name: item.contact.firstName,
                         score: "\(item.score)",
                         color: index == 0 ? .green : index == 1 ? .yellow : .pink,
-                        image: item.contact.imageName
+                        image: item.contact.imageName ?? "women 1"
                     )
                 }
             }
             .padding(40)
+        }
+        .toolbar {
+            ToolbarItemGroup (placement: .bottomBar) {
+                NavigationLink {
+                    Screen1Player(players: ([
+                        ContactModel(firstName: "Jody", phoneNumber: "123", imageName: "men 1", role: .player),
+                        ContactModel(firstName: "Sam", phoneNumber: "456", imageName: "men 2", role: .player),
+                        ContactModel(firstName: "Virel", phoneNumber: "789", imageName: "men 3", role: .player),
+                        ContactModel(firstName: "Alex", phoneNumber: "222", imageName: "women 3", role: .player)
+                    ]),
+                                  victims: ([
+                                    ContactModel(firstName: "Ish", phoneNumber: "000", imageName: "women 1", role: .player),
+                                    ContactModel(firstName: "Chandra", phoneNumber: "111", imageName: "women 2", role: .player),
+                                    ContactModel(firstName: "Nathan", phoneNumber: "999", imageName: "men 1", role: .victim)
+                                  ]))
+                } label: {
+                    Text ("New Game")
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glass)
+                .scrollEdgeEffectHidden()
+            }
         }
     }
 }
